@@ -1,21 +1,78 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class PlayerScript : MonoBehaviour
 {
 
     private Rigidbody2D rd2d;
     public float speed;
-    public Text score;
-    private int scoreValue = 0;
+    public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI livesText;
+    private int scoreValue;
+    private int livesValue;
+
+    public GameObject WinTextObject;
+    public GameObject LoseTextObject;
+
+    public AudioClip musicClipOne;
+    public AudioClip musicClipTwo;
+    public AudioSource musicSource;
 
     // Start is called before the first frame update
     void Start()
     {
         rd2d = GetComponent<Rigidbody2D>();
-        score.text = scoreValue.ToString();
+        scoreValue = 0;
+
+        rd2d = GetComponent<Rigidbody2D>();
+        livesValue = 3;
+
+        SetCountText();
+        WinTextObject.SetActive(false);
+
+        SetCountText();
+        LoseTextObject.SetActive(false);
+
+        musicSource.clip = musicClipTwo;
+        musicSource.Play();
+        musicSource.loop = true;
+
+    }
+
+    void SetCountText()
+    {
+        scoreText.text = "Score: " + scoreValue.ToString();
+        if (scoreValue >= 8)
+        {
+            WinTextObject.SetActive(true);
+
+            musicSource.clip = musicClipTwo;
+            musicSource.Stop();
+
+            musicSource.clip = musicClipOne;
+            musicSource.Play();
+            musicSource.loop = false;
+
+            speed = 0;
+
+        }
+
+        scoreText.text = "Score: " + scoreValue.ToString();
+        if (scoreValue == 4)
+        {
+            livesValue = 3;
+            transform.position = new Vector2(50f, 0.5f);
+        }
+
+        livesText.text = "Lives: " + livesValue.ToString();
+        if (livesValue == 0)
+        {
+            LoseTextObject.SetActive(true);
+            Destroy(gameObject);
+        }
+        
     }
 
     // Update is called once per frame
@@ -33,8 +90,16 @@ public class PlayerScript : MonoBehaviour
         if(collision.collider.tag == "Coin")
         {
             scoreValue += 1;
-            score.text = scoreValue.ToString();
+            SetCountText();
             Destroy(collision.collider.gameObject);
+        }
+
+        if (collision.collider.tag == "Enemy")
+        {
+            Destroy(collision.collider.gameObject);
+            livesValue = livesValue - 1;
+
+            SetCountText();
         }
     }
 
